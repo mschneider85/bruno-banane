@@ -424,11 +424,11 @@ SCENES.hafen = {
       svg: () => `<g><path d="M998 545 V440 Q998 398 1045 398 Q1092 398 1092 440 V545Z" fill="#ffb627" class="o"/><path d="M1022 410 V545 M1045 398 V545 M1068 410 V545" stroke="#d4870f" stroke-width="3"/><circle cx="1045" cy="440" r="15" fill="#7ff0ff" class="o2"/><circle cx="1076" cy="496" r="6" fill="#ff3d6e" class="o2"/></g>`,
     },
     {
-      id: 'exitL', name: 'Zum Dschungel', exit: 'dschungel', at: [45, 630],
+      id: 'exitL', layer: 'front', name: 'Zum Dschungel', exit: 'dschungel', at: [45, 630],
       svg: () => `<g>${hit(0, 480, 70, 240)}${arrow(48, 620, -1)}</g>`,
     },
     {
-      id: 'exitR', name: 'Zum Leuchtturm', exit: 'leuchtturm', at: [1235, 650],
+      id: 'exitR', layer: 'front', name: 'Zum Leuchtturm', exit: 'leuchtturm', at: [1235, 650],
       svg: () => `<g>${hit(1210, 550, 70, 170)}${arrow(1232, 640, 1)}</g>`,
     },
   ],
@@ -691,7 +691,7 @@ SCENES.leuchtturm = {
       anyItem: () => [['krabbe', 'Schnipp.'], ['krabbe', 'Das heißt „Nein danke“ auf Krabbisch.']],
     },
     {
-      id: 'exitL', name: 'Zum Hafen', exit: 'hafen', at: [45, 640],
+      id: 'exitL', layer: 'front', name: 'Zum Hafen', exit: 'hafen', at: [45, 640],
       svg: () => `<g>${hit(0, 480, 70, 240)}${arrow(48, 610, -1)}</g>`,
     },
   ],
@@ -882,7 +882,7 @@ SCENES.dschungel = {
     <g class="o"><path d="M1104 282 Q1010 220 940 300 Q1020 260 1100 292Z" fill="#2ee86b"/><path d="M1104 282 Q1060 180 990 170 Q1070 200 1100 286Z" fill="#19c37d"/><path d="M1104 282 Q1160 180 1240 190 Q1160 210 1110 288Z" fill="#2ee86b"/><path d="M1104 282 Q1200 230 1270 310 Q1190 268 1110 292Z" fill="#19c37d"/></g>`;
   },
   fg() {
-    return `${leaf(-30, 700, -40, 2.2, '#19c37d')}${leaf(-20, 690, -10, 1.8, '#2ee86b')}${leaf(1320, 700, 220, 2, '#0fb8a0')}`;
+    return `${leaf(-40, 735, -18, 2.0, '#19c37d')}${leaf(-20, 690, -10, 1.8, '#2ee86b')}${leaf(1300, 735, 195, 1.7, '#0fb8a0')}`;
   },
   objects: [
     {
@@ -947,7 +947,7 @@ SCENES.dschungel = {
       anyItem: () => [['tukan', 'KRAAH! Will ich nicht! Ich will Ruhe! Und Beeren!']],
     },
     {
-      id: 'exitR', name: 'Zum Hafen', exit: 'hafen', at: [1235, 640],
+      id: 'exitR', layer: 'front', name: 'Zum Hafen', exit: 'hafen', at: [1235, 640],
       svg: () => `<g>${hit(1210, 520, 70, 200)}${arrow(1232, 620, 1)}</g>`,
     },
   ],

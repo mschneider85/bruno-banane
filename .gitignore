@@ -1,2 +1,4 @@
 icons/*.svg~
 .DS_Store
+node_modules/
+voice-samples/

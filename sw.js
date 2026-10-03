@@ -1,10 +1,10 @@
 // Service Worker: macht das Spiel offline spielbar.
 // Nach Änderungen an Spieldateien VERSION erhöhen.
-const VERSION = 'bruno-v1';
+const VERSION = 'bruno-v2';
 const FONTS = 'bruno-fonts';
 const ASSETS = [
   './', 'index.html', 'style.css', 'content.js', 'engine.js', 'manifest.webmanifest',
-  'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
+  'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'voice/index.json',
 ];
 
 self.addEventListener('install', e => {
@@ -16,8 +16,21 @@ self.addEventListener('activate', e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== FONTS).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(cacheVoices)
   );
 });
+
+// Sprachdateien nach der Installation im Hintergrund laden (für offline)
+async function cacheVoices() {
+  try {
+    const cache = await caches.open(VERSION);
+    const keys = await (await fetch('voice/index.json')).json();
+    for (const k of keys) {
+      const url = `voice/${k}.mp3`;
+      if (!(await cache.match(url))) { const res = await fetch(url); if (res.ok) await cache.put(url, res); }
+    }
+  } catch (e) { /* beim nächsten Start erneut */ }
+}
 
 self.addEventListener('fetch', e => {
   const req = e.request;

@@ -201,6 +201,7 @@ button { font-family: inherit; }
   box-shadow: 0 .4cqw 0 var(--ink); display: grid; place-items: center; padding: 0;
 }
 #buttons button:active { transform: translateY(.3cqw); box-shadow: 0 .1cqw 0 var(--ink); }
+#buttons button.off { background: #9c8fc0; text-decoration: line-through; opacity: .75; }
 #btnHint { animation: hintGlow 3s ease-in-out infinite; }
 @keyframes hintGlow { 50% { box-shadow: 0 .4cqw 0 var(--ink), 0 0 1.4cqw #fff6a8; } }
 
@@ -300,3 +301,6 @@ h1 {
   #verbs button { width: 10.5cqw; height: 10.5cqw; }
   #verbs button small { font-size: 1.6cqw; }
 }
+
+#help .credits-voice { font-size: 1.3cqw; opacity: .75; }
+#help a { color: var(--cyan); }

@@ -150,23 +150,40 @@ function say(text, who = 'hero') {
     const [x, y] = actorPos(who);
     el.textContent = text;
     el.style.color = (ACTORS[who] || ACTORS.hero).color;
-    el.style.left = clamp(x / W * 100, 20, 80) + '%';
-    el.style.top = (who === 'narr' ? 4 : clamp(y / H * 100, 24, 92)) + '%';
     el.className = 'show' + (who === 'narr' ? ' narr' : '');
+    placeSpeech(el, x, who === 'narr' ? null : y);
     const talker = who === 'hero' ? G.hero : document.querySelector(`[data-actor="${who}"]`);
     if (talker) talker.classList.add('talking');
-    blip(who);
-    let done = false;
+    let done = false, t = null, voice = null;
     const fin = () => {
       if (done) return; done = true;
       clearTimeout(t); G.skip = null;
+      if (voice) voice.stop();
       el.className = '';
       if (talker) talker.classList.remove('talking');
       setTimeout(res, 90);
     };
-    const t = setTimeout(fin, Math.max(1500, 800 + text.length * 52));
     G.skip = fin;
+    const fallback = () => { blip(who); t = setTimeout(fin, Math.max(1500, 800 + text.length * 52)); };
+    const key = voiceKey(who, text);
+    if (Snd.voiceOn && VOICE.has(key)) {
+      loadVoice(key).then(buf => {
+        if (done) return;
+        voice = playVoice(buf);
+        t = setTimeout(fin, buf.duration * 1000 + 350);
+      }).catch(() => { if (!done) fallback(); });
+    } else fallback();
   });
+}
+// Sprechblase über dem Sprecher platzieren, aber immer komplett im Bild
+function placeSpeech(el, x, y) {
+  const st = $('#stage'), sw = st.clientWidth, sh = st.clientHeight, pad = sw * .012;
+  const w = el.offsetWidth, h = el.offsetHeight;
+  const cx = clamp(x / W * sw, w / 2 + pad, sw - w / 2 - pad);
+  el.style.left = cx + 'px';
+  if (y == null) { el.style.top = pad + 'px'; return; }
+  // Unterkante der Blase knapp über dem Kopf, notfalls tiefer rutschen
+  el.style.top = clamp(y / H * sh, h + pad, sh - pad) + 'px';
 }
 async function run(h, ...args) {
   if (h == null) return;
@@ -374,6 +391,7 @@ function bindUI() {
 
   $('#btnHint').onclick = () => { if (G.skip) return G.skip(); if (!G.busy && !G.dialog) script(() => say('Psst! ' + hint(), 'narr')); };
   $('#btnSound').onclick = () => { setSound(!Snd.on); };
+  $('#btnVoice').onclick = () => { ensureAudio(); setVoice(!Snd.voiceOn); };
   $('#btnMenu').onclick = openMenu;
   $('#mResume').onclick = closeMenu;
   $('#mHelp').onclick = () => { $('#help').hidden = !$('#help').hidden; };
@@ -443,8 +461,8 @@ function showEnd() {
 }
 
 // ---------- Audio (WebAudio-Synth) ----------
-const Snd = { ctx: null, on: true, cur: null, timer: null };
-try { Snd.on = localStorage.getItem('bruno-sound') !== 'off'; } catch (e) { /* egal */ }
+const Snd = { ctx: null, on: true, voiceOn: true, cur: null, timer: null };
+try { Snd.on = localStorage.getItem('bruno-sound') !== 'off'; Snd.voiceOn = localStorage.getItem('bruno-voice') !== 'off'; } catch (e) { /* egal */ }
 function ensureAudio() {
   try {
     if (!Snd.ctx) {
@@ -453,6 +471,7 @@ function ensureAudio() {
       Snd.ctx = new C();
       Snd.master = Snd.ctx.createGain(); Snd.master.gain.value = .8; Snd.master.connect(Snd.ctx.destination);
       Snd.mus = Snd.ctx.createGain(); Snd.mus.gain.value = .5; Snd.mus.connect(Snd.master);
+      Snd.vox = Snd.ctx.createGain(); Snd.vox.gain.value = 1; Snd.vox.connect(Snd.ctx.destination);
     }
     if (Snd.ctx.state === 'suspended') Snd.ctx.resume();
     return Snd.ctx;
@@ -508,6 +527,48 @@ function blip(who) {
   const t = c.currentTime;
   for (let i = 0; i < 3; i++) tone(base * (1 + Math.random() * .4), t + i * .07, .05, 'square', .025);
 }
+// Vorproduzierte Sprachausgabe (voice/<hash>.mp3, erzeugt mit tools/voices.js)
+const VOICE = new Set();
+const voiceCache = new Map();
+function voiceKey(who, text) {
+  let h = 0x811c9dc5;
+  const s = who + '|' + text;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+async function loadVoice(key) {
+  if (voiceCache.has(key)) return voiceCache.get(key);
+  const c = ensureAudio();
+  if (!c) throw new Error('kein Audio');
+  const res = await fetch(`voice/${key}.mp3`);
+  if (!res.ok) throw new Error(res.status);
+  const data = await res.arrayBuffer();
+  const buf = await new Promise((ok, bad) => c.decodeAudioData(data, ok, bad));
+  voiceCache.set(key, buf);
+  if (voiceCache.size > 24) voiceCache.delete(voiceCache.keys().next().value);
+  return buf;
+}
+function playVoice(buf) {
+  const c = Snd.ctx, src = c.createBufferSource();
+  src.buffer = buf; src.connect(Snd.vox);
+  Snd.mus.gain.setTargetAtTime(.15, c.currentTime, .08);
+  let stopped = false;
+  const stop = () => {
+    if (stopped) return; stopped = true;
+    try { src.stop(); } catch (e) { /* schon zu Ende */ }
+    Snd.mus.gain.setTargetAtTime(.5, Snd.ctx.currentTime, .3);
+  };
+  src.onended = stop;
+  src.start();
+  return { stop };
+}
+function setVoice(on) {
+  Snd.voiceOn = on;
+  try { localStorage.setItem('bruno-voice', on ? 'on' : 'off'); } catch (e) { /* egal */ }
+  $('#btnVoice').classList.toggle('off', !on);
+  $('#btnVoice').title = on ? 'Sprachausgabe aus' : 'Sprachausgabe an';
+}
+
 function nf(n) {
   const m = /^([A-G])(#?)(\d)$/.exec(n);
   const semi = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] ? 1 : 0);
@@ -562,6 +623,8 @@ function init() {
   $('#heroLayer').appendChild(G.hero);
   $('#titleHero').innerHTML = HERO_SVG;
   $('#btnSound').textContent = Snd.on ? '🔊' : '🔇';
+  setVoice(Snd.voiceOn);
+  fetch('voice/index.json').then(r => r.ok ? r.json() : []).then(keys => keys.forEach(k => VOICE.add(k))).catch(() => {});
   $('#tInstall').onclick = async () => {
     if (!installPrompt) return;
     installPrompt.prompt();
