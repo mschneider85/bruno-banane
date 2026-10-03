@@ -5,6 +5,7 @@
  *   node tools/voices.js --force    alle Sätze neu erzeugen
  *   node tools/voices.js --samples  Hörproben nach voice-samples/ schreiben
  *   node tools/voices.js --list     nur die gefundenen Sätze ausgeben
+ *   node tools/voices.js --ipa "Text"  Aussprache (Lautschrift) prüfen, siehe tools/aussprache.js
  *
  * Voraussetzungen: Piper unter $PIPER_DIR (Standard ~/.local/piper) mit
  * ./piper/piper und den Stimmen in ./voices/, außerdem ffmpeg mit libmp3lame.
@@ -16,12 +17,15 @@ const os = require('os');
 const { execFile } = require('child_process');
 const acorn = require('acorn');
 const walk = require('acorn-walk');
+const crypto = require('crypto');
+const { aussprache } = require('./aussprache');
 
 const ROOT = path.join(__dirname, '..');
 const PIPER_DIR = process.env.PIPER_DIR || path.join(os.homedir(), '.local/piper');
 const PIPER = path.join(PIPER_DIR, 'piper/piper');
 const VOICES = path.join(PIPER_DIR, 'voices');
 const OUT = path.join(ROOT, 'voice');
+module.exports = { collectLines: () => collectLines(), speakable: t => speakable(t), PIPER_DIR };
 
 // ---------- Besetzung ----------
 // model: Piper-Stimme, speaker: Sprecher-ID (Mehrsprecher-Modelle),
@@ -52,7 +56,7 @@ function voiceKey(who, text) {
 
 // Text für die Aussprache aufbereiten (der Hash nutzt den Originaltext)
 function speakable(text) {
-  return text
+  return aussprache(text)
     .replace(/💡/g, 'Glühbirnen-Knopf')
     .replace(/[\u{1F000}-\u{1FFFF}☀-➿]/gu, '')
     .replace(/\*/g, '')
@@ -186,16 +190,34 @@ ${S.map(([name, , casts, text], i) => `<section><h2>${name}</h2><p>„${text}“
 }
 
 // ---------- Hauptprogramm ----------
-(async () => {
+if (require.main === module) (async () => {
   const argv = process.argv.slice(2);
   if (argv.includes('--samples')) return samples();
+  if (argv.includes('--ipa')) {
+    const words = argv.filter(a => !a.startsWith('--'));
+    const out = await new Promise((res, rej) => {
+      const p = execFile(path.join(PIPER_DIR, 'piper/piper_phonemize'), ['-l', 'de', '--espeak-data', path.join(PIPER_DIR, 'piper/espeak-ng-data')], { env: { LD_LIBRARY_PATH: path.join(PIPER_DIR, 'piper') } }, (e, o) => e ? rej(e) : res(o));
+      p.stdin.end(words.map(speakable).join('\n') + '\n');
+    });
+    out.trim().split('\n').forEach((l, i) => console.log(words[i].padEnd(24), speakable(words[i]).padEnd(28), JSON.parse(l).phonemes.join('')));
+    return;
+  }
   const lines = collectLines();
   if (argv.includes('--list')) { for (const [k, l] of lines) console.log(k, l.who.padEnd(8), l.text); console.log(lines.size, 'Sätze'); return; }
   fs.mkdirSync(OUT, { recursive: true });
+  // Merkt sich pro Datei gesprochenen Text + Stimme; Änderungen werden neu vertont
+  const MANIFEST = path.join(__dirname, 'voice-manifest.json');
+  const manifest = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
+  const sig = l => crypto.createHash('sha1').update(speakable(l.text) + JSON.stringify(castFor(l.who, l.text))).digest('hex').slice(0, 12);
   const force = argv.includes('--force');
-  const todo = [...lines].filter(([k]) => force || !fs.existsSync(path.join(OUT, k + '.mp3')));
+  const todo = [...lines].filter(([k, l]) => force || manifest[k] !== sig(l) || !fs.existsSync(path.join(OUT, k + '.mp3')));
   console.log(`${lines.size} Sätze, ${todo.length} zu erzeugen`);
-  await pool(todo, Math.max(2, os.cpus().length - 2), ([k, l]) => synth(l.text, castFor(l.who, l.text), path.join(OUT, k + '.mp3')));
+  await pool(todo, Math.max(2, os.cpus().length - 2), async ([k, l]) => {
+    await synth(l.text, castFor(l.who, l.text), path.join(OUT, k + '.mp3'));
+    manifest[k] = sig(l);
+  });
+  for (const k of Object.keys(manifest)) if (!lines.has(k)) delete manifest[k];
+  fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 0));
   // Veraltete Dateien entfernen, Index schreiben
   for (const f of fs.readdirSync(OUT)) if (f.endsWith('.mp3') && !lines.has(f.slice(0, -4))) fs.unlinkSync(path.join(OUT, f));
   fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify([...lines.keys()].sort()));

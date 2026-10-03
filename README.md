@@ -27,6 +27,9 @@ Dateiname = Hash aus Sprecher und Text). Nach Textänderungen in `content.js`:
     node tools/voices.js --samples  # Hörproben in voice-samples/
 
 Die Besetzung (Stimme, Tempo, Tonhöhe pro Figur) steht oben in `tools/voices.js`.
+Falsch ausgesprochene Wörter korrigiert man in `tools/aussprache.js` (Ersatzschreibweisen, Jahreszahlen).
+Prüfen, wie ein Wort gelesen wird: `node tools/voices.js --ipa "Klebe-Angel" "seit 1987"`.
+Geänderte Aussprache oder Besetzung erkennt der Generator selbst (`tools/voice-manifest.json`).
 Piper und die Stimmen werden unter `~/.local/piper` erwartet (`PIPER_DIR` überschreibt das).
 
 Stimmen-Lizenzen: Thorsten und Thorsten Emotional (CC0, Thorsten Müller), Kerstin (CC0),
