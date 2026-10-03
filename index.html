@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bruno Banane</title>
+<meta name="description" content="Ein quietschbuntes Point-&-Click-Adventure: Bruno Banane und das Leuchtturm-Fiasko.">
+<meta name="theme-color" content="#5a2fd0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game">
+  <div id="stage">
+    <svg id="scene" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="stripes" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#ff3d6e"/><rect y="8" width="16" height="8" fill="#fff4f8"/></pattern>
+        <radialGradient id="gwGlow"><stop offset="0" stop-color="#f6ff9a"/><stop offset=".35" stop-color="#d4ff4d" stop-opacity=".75"/><stop offset="1" stop-color="#7dff4d" stop-opacity="0"/></radialGradient>
+        <linearGradient id="rainbowV" x1="0" y1="0" x2="0" y2="1"><stop offset=".1" stop-color="#ff3d6e"/><stop offset=".25" stop-color="#ff9f1c"/><stop offset=".4" stop-color="#ffd60a"/><stop offset=".55" stop-color="#2fe07a"/><stop offset=".7" stop-color="#2bb5ff"/><stop offset=".9" stop-color="#9b5cff"/></linearGradient>
+      </defs>
+      <g id="bg"></g>
+      <g id="back"></g>
+      <g id="heroLayer"></g>
+      <g id="front"></g>
+    </svg>
+    <div id="label"></div>
+    <div id="toast"></div>
+    <div id="speech"></div>
+    <div id="verbs" hidden>
+      <div class="vname"></div>
+      <div class="vrow">
+        <button data-v="look"><span>👁️</span><small>Ansehen</small></button>
+        <button data-v="use"><span>✋</span><small>Benutzen</small></button>
+        <button data-v="talk"><span>💬</span><small>Reden</small></button>
+      </div>
+    </div>
+    <div id="fade"></div>
+  </div>
+
+  <div id="bar">
+    <div id="inv"></div>
+    <div id="buttons">
+      <button id="btnHint" title="Tipp (H)">💡</button>
+      <button id="btnSound" title="Ton an/aus">🔊</button>
+      <button id="btnMenu" title="Menü (Esc)">☰</button>
+    </div>
+  </div>
+  <div id="itemMenu" hidden></div>
+  <div id="dialog" hidden></div>
+
+  <!-- Titelbild -->
+  <div id="title" class="screen">
+    <div class="sunburst"></div>
+    <div class="tcontent">
+      <svg id="titleHeroSvg" viewBox="-110 -310 220 330"><g id="titleHero"></g></svg>
+      <div class="tside">
+        <h1>Bruno<br>Banane</h1>
+        <div class="ribbon">und das Leuchtturm-Fiasko</div>
+        <div class="tbtns">
+          <button id="tNew" class="big">🍌 Neues Spiel</button>
+          <button id="tLoad" class="big alt" hidden>▶ Weiterspielen</button>
+          <button id="tInstall" class="small" hidden>📲 Installieren</button>
+          <button id="tFull" class="small">⛶ Vollbild</button>
+        </div>
+      </div>
+    </div>
+    <div class="credits">Ein quietschbuntes Point-&amp;-Click-Abenteuer</div>
+  </div>
+
+  <!-- Menü -->
+  <div id="menu" class="screen dim" hidden>
+    <div class="panel">
+      <h2>Pause</h2>
+      <button id="mResume" class="big">▶ Weiter</button>
+      <button id="mHelp" class="small">❓ Steuerung</button>
+      <div id="help" hidden>
+        <p><b>Tippen auf den Boden:</b> Bruno läuft hin.</p>
+        <p><b>Tippen auf Dinge &amp; Figuren:</b> 👁️ Ansehen, ✋ Benutzen/Nehmen, 💬 Reden.</p>
+        <p><b>Tippen auf ein Item:</b> Ansehen, benutzen oder „Benutzen mit …“ wählen – dann auf ein Ding in der Welt oder ein anderes Item tippen (kombinieren).</p>
+        <p><b>Rechtsklick:</b> direkt ansehen. <b>Leertaste/Klick:</b> Text überspringen. <b>H:</b> Tipp.</p>
+        <p>Das Spiel speichert automatisch.</p>
+      </div>
+      <button id="mFull" class="small">⛶ Vollbild</button>
+      <button id="mNew" class="small">🔄 Neues Spiel</button>
+      <button id="mTitle" class="small">🏠 Zum Titelbild</button>
+    </div>
+  </div>
+
+  <!-- Ende -->
+  <div id="end" class="screen" hidden>
+    <div class="sunburst"></div>
+    <div class="panel endpanel">
+      <h1>ENDE!</h1>
+      <p>Der Leuchtturm strahlt in allen Farben des Regenbogens. Die „MS Wackelpudding“ legt an, und Bruno kommt pünktlich zu Oma Gerdas Geburtstag.</p>
+      <p>Olga eröffnet eine Disco. Lamar geht auf Comedy-Tour. Und Günther? Günther bekommt jeden Freitag Pommes. Für immer.</p>
+      <p class="stats" id="eStats"></p>
+      <button id="eAgain" class="big">🍌 Nochmal spielen</button>
+    </div>
+  </div>
+</div>
+<div id="rotate">📱↻ Dreh dein Gerät quer für mehr Abenteuer!</div>
+<script src="content.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
