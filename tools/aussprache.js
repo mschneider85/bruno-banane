@@ -22,6 +22,18 @@ const LEXIKON = [
   [/\bumgebracht\b/g, 'ummgebracht'],
   [/\bAbenteurer/g, 'Abentoyrer'],
   [/\bBANANENTOLLE\b|\bBananentolle\b/g, 'Bananen-Tolle'],
+  // Fremdwörter (englisch/französisch ausgesprochen)
+  [/\bCharme\b/g, 'Scharm'],
+  [/\bJukebox/g, 'Dschukbox'],
+  [/\b([Cc])ool(e|er|es|en)?\b/g, (m, c, e) => (c === 'C' ? 'Kuhl' : 'kuhl') + (e || '')],
+  [/\bMallorca\b/g, 'Majorka'],
+  [/\b([Oo])kay\b/g, '$1-keh'],
+  [/\bWow\b/g, 'Wau'],
+  [/\bGullywasser/g, 'Gulli-Wasser'],
+  [/\bGelee\b/g, 'Sche-leh'],
+  [/\bVideospiel/g, 'Video-Spiel'],
+  [/\bSternekoch/g, 'Sterne-Koch'],
+  [/\bSarkasmus\b/g, 'Sar-kasmus'],
   // Lautmalerei, die eSpeak sonst buchstabiert
   [/\bPsst!/g, 'Kleiner Tipp:'],
   [/\bBsss\b/g, 'Summ'],
