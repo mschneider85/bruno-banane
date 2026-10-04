@@ -1,7 +1,8 @@
 /* Aussprache-Korrekturen für die Sprachausgabe.
  * Ändert nur den gesprochenen Text, nicht die Untertitel.
- * LEXIKON gilt für alle Engines, NUR_PIPER nur für Piper (eSpeak-Umschreibungen,
- * die Chatterbox eher verwirren würden).
+ * LEXIKON gilt für alle Engines, NUR_PIPER nur für Piper (eSpeak-Umschreibungen),
+ * NUR_CHATTERBOX nur für Chatterbox (per Lauterkennung ermittelt: je Wort mehrere
+ * Schreibweisen vertont und die mit der richtigen Aussprache gewählt).
  * Prüfen, wie eSpeak ein Wort liest:  node tools/voices.js --ipa "Wort"
  */
 'use strict';
@@ -38,6 +39,22 @@ const NUR_PIPER = [
   [/\bSarkasmus\b/g, 'Sar-kasmus'],
   // Lautmalerei, die eSpeak sonst buchstabiert
   [/\bMhm\b/g, 'Aha'],
+];
+
+const NUR_CHATTERBOX = [
+  [/\bCharme\b/g, 'Scharmm'],
+  [/\bJukebox/g, 'Dschuhkbox'],
+  [/\bMallorca\b/g, 'Majorka'],
+  [/\bGelee\b/g, 'Schelee'],
+  [/\bShow\b/g, 'Schoh'],
+  [/\bJob\b/g, 'Dschopp'],
+  [/\bDeal\b/g, 'Diel'],
+  [/\bDisco/g, 'Disko'],
+  [/\bParty\b/g, 'Paarti'],
+  [/\bRestaurant/g, 'Resto-rang'],
+  [/\bCousine\b/g, 'Kusine'],
+  [/\bCiao\b/g, 'Tschau'],
+  [/\bTouristen\b/g, 'Turisten'],
 ];
 
 const LEXIKON = [
@@ -108,10 +125,11 @@ function aussprache(text, engine = 'piper') {
   for (const [re, tags] of GERAEUSCHE) text = text.replace(re, ' ' + tags.split(' ').map(t => `⟦${t}⟧`).join(' ') + ' ');
   let t = text.replace(/\b(1[1-9]\d\d)\b/g, (m, y) => jahr(+y)).replace(/\b\d+\b/g, n => zahl(+n));
   if (engine === 'piper') for (const [re, rep] of NUR_PIPER) t = t.replace(re, rep);
+  if (engine === 'chatterbox') for (const [re, rep] of NUR_CHATTERBOX) t = t.replace(re, rep);
   for (const [re, rep] of LEXIKON) t = t.replace(re, rep);
   // GROSSGESCHRIEBENES normal schreiben, sonst liest eSpeak es teils als Abkürzung
   t = t.replace(/(?<!\p{L})\p{Lu}{2,}(?!\p{L})/gu, w => w[0] + w.slice(1).toLowerCase());
   return t;
 }
 
-module.exports = { aussprache, LEXIKON, NUR_PIPER, GERAEUSCHE };
+module.exports = { aussprache, LEXIKON, NUR_PIPER, NUR_CHATTERBOX, GERAEUSCHE };

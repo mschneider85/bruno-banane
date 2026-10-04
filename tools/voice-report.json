@@ -360,14 +360,14 @@
   "ratio": 0.92
  },
  "4ccff324": {
-  "dur": 5.28,
-  "cps": 14,
+  "dur": 5.56,
+  "cps": 13.3,
   "tries": 1,
   "flag": false,
-  "heard": "ɪntəmɪtpɔməsplɪŋnaxaɪnəmərastɔrɔɪntasɪçniːɡiːɪnvyːdə",
-  "ipa": 0.235,
-  "ipaFlag": false,
-  "ratio": 0.94
+  "heard": "ɛntəmɪtpɔməsklɪŋtnaxaɪnmrɛstoːraŋɪndasɪçniːɡeːənvyːɾdə",
+  "ipa": 0.059,
+  "ratio": 0.96,
+  "ipaFlag": false
  },
  "628c5136": {
   "dur": 4.12,
@@ -1040,14 +1040,14 @@
   "ratio": 0.88
  },
  "e2d45da3": {
-  "dur": 4.92,
-  "cps": 13.6,
+  "dur": 5,
+  "cps": 13.2,
   "tries": 1,
   "flag": false,
-  "heard": "eːnlasɪçʃteːənzɔnstfɛɾlaʊfənzɪçdiːtʊrɪstənalytəraɪ",
-  "ipa": 0.149,
-  "ipaFlag": false,
-  "ratio": 0.96
+  "heard": "eːnlasɪʃteːənzɔnstfɛɾlaʊfənzɪçdiːtuːrɪstənalytədaɪ",
+  "ipa": 0.17,
+  "ratio": 0.94,
+  "ipaFlag": false
  },
  "4922f4a8": {
   "dur": 7.36,
@@ -1070,14 +1070,14 @@
   "ratio": 0.95
  },
  "a81cc7da": {
-  "dur": 5.04,
-  "cps": 11.3,
+  "dur": 5.12,
+  "cps": 11.5,
   "tries": 1,
   "flag": false,
-  "heard": "tɪnənfɪʃliːmoːzeːtaŋʃɔləkbalənɡəleːlɪk",
-  "ipa": 0.158,
-  "ipaFlag": false,
-  "ratio": 0.89
+  "heard": "ɪnənfɪʃliːmoːðeːtaŋʃɔləkbalənʃeːleːlɪkɚbeː",
+  "ipa": 0.237,
+  "ratio": 0.95,
+  "ipaFlag": false
  },
  "b0418282": {
   "dur": 3.84,
@@ -1120,14 +1120,14 @@
   "ratio": 0.85
  },
  "289e5afc": {
-  "dur": 4.84,
-  "cps": 14.7,
+  "dur": 5.48,
+  "cps": 13.5,
   "tries": 1,
   "flag": false,
-  "heard": "bahaltaɪnəntɑːlɜʃɛtsçɪmviːɾfɪnliːbɜɪndɪjuːkbɔksbɪtə",
-  "ipa": 0.146,
-  "ipaFlag": false,
-  "ratio": 0.94
+  "heard": "bɑːhaltaɪnəntɑːlɜʃɛtsənvɛɾfɪnliːbɜɪndiːtuːkpɔksbɪtɚ",
+  "ipa": 0.125,
+  "ratio": 0.92,
+  "ipaFlag": false
  },
  "17e1b458": {
   "dur": 3.8,
@@ -1180,22 +1180,22 @@
   "ratio": 0.86
  },
  "25de43e4": {
-  "dur": 6.64,
-  "cps": 12.8,
+  "dur": 6.2,
+  "cps": 14.2,
   "tries": 1,
   "flag": false,
-  "heard": "diːjuːkbɔksʃbiːlɡɛstdɪskʊkɾɑːkədɛraɪttaʊzəntaɪnmaɪstɜvɛɾkdɛɾtəntɑːɡiːmuːzɪkoːʊ",
-  "ipa": 0.185,
-  "ratio": 1.02,
+  "heard": "iːtʃuːkbɔksʃbiːtjɛstdɪskoːkzɑːkəbraɪthaʊzəntaɪnmaɪstɜvɛɾkdɛɾtɪntɑːɾtəmuːziː",
+  "ipa": 0.2,
+  "ratio": 0.95,
   "ipaFlag": false
  },
  "3c0d356c": {
-  "dur": 7.4,
+  "dur": 7.64,
   "cps": 12.6,
   "tries": 1,
   "flag": false,
-  "heard": "aɪnəjuːkbɔksziːʃbiːltdɪŋɡuːɾɡənvaltsəɪnmɔlzaɪtaɪnʊntraɪsəɡjɑːrənʊnʊntɜbɔxən",
-  "ipa": 0.136,
+  "heard": "aɪnəʃuːkbɔkssiːʃbiːltdɪnɡ??ɾpənvaltsəɪnmɔlzaɪtaɪnʊntraɪzɪɡjɑːrənʊnʊntɜbrɔxən",
+  "ipa": 0.091,
   "ratio": 0.98,
   "ipaFlag": false
  },
@@ -1210,14 +1210,14 @@
   "ratio": 0.95
  },
  "d13fc037": {
-  "dur": 5.28,
-  "cps": 12.5,
+  "dur": 5.36,
+  "cps": 12.3,
   "tries": 1,
   "flag": false,
-  "heard": "iːdɪsɡoːblaɪtansɔnstɛɾvyːktmɪçɔølɡɜvɪtalənatɑːmən",
-  "ipa": 0.204,
-  "ipaFlag": false,
-  "ratio": 0.88
+  "heard": "iːdɪsɡoːblaɪtansɔnstɛɾvyːkmɪʃɔlɡɜmɪtalənaxtɑːmən",
+  "ipa": 0.163,
+  "ratio": 0.88,
+  "ipaFlag": false
  },
  "341f9284": {
   "dur": 3.64,
@@ -1240,14 +1240,14 @@
   "ratio": 0.97
  },
  "c95e6c5a": {
-  "dur": 5.04,
-  "cps": 15.3,
+  "dur": 5.48,
+  "cps": 14.6,
   "tries": 1,
   "flag": false,
-  "heard": "liːbəjuːkbɔksɪtɪʃbiːvasandərəsziːvalstaɪnfaxvaɪtəhɛɾtsloːs",
-  "ipa": 0.094,
-  "ipaFlag": false,
-  "ratio": 0.94
+  "heard": "liːbətʃuːkbɔksbɪtɪʃiːvasandərəsziːvaɪlstaɪntfɜflaɪtəhɛɾtsloːs",
+  "ipa": 0.208,
+  "ratio": 0.96,
+  "ipaFlag": false
  },
  "cefab4d5": {
   "dur": 2.36,
@@ -1300,24 +1300,24 @@
   "ratio": 0.87
  },
  "54d4faec": {
-  "dur": 5.28,
-  "cps": 13.6,
+  "dur": 5.16,
+  "cps": 14.5,
   "tries": 1,
   "flag": false,
-  "heard": "ɪçanɡlənɪçtɪnjuːkbɔksəndasɪstʊntɛɾmaɪnɜvyːdəknapdɾʊntə",
+  "heard": "çaŋɡlənɪçtɪnʃʊŋkboːksəndasɪstʊntɜmaɪnɜvlyːdəknapdɾʊntə",
   "ipa": 0.189,
-  "ipaFlag": false,
-  "ratio": 0.96
+  "ratio": 0.96,
+  "ipaFlag": false
  },
  "7f948b1c": {
-  "dur": 4.44,
-  "cps": 13.1,
+  "dur": 4.2,
+  "cps": 14.5,
   "tries": 1,
   "flag": false,
-  "heard": "iːjuːkbɔksnɪmtnuːtɑːləsiːɪstðɛɾmataɪɜlɪstɪ",
-  "ipa": 0.214,
-  "ipaFlag": false,
-  "ratio": 0.86
+  "heard": "iːtʃuːkbɔksneɪmtnuːtɑːləziːɪstzeːɾmatrialɪstɪʃ",
+  "ipa": 0.143,
+  "ratio": 0.93,
+  "ipaFlag": false
  },
  "6986a5da": {
   "dur": 2.4,
@@ -1480,14 +1480,14 @@
   "ratio": 1.04
  },
  "001500e4": {
-  "dur": 5.6,
-  "cps": 11.8,
+  "dur": 5.44,
+  "cps": 12.9,
   "tries": 1,
   "flag": false,
-  "heard": "eːɾlɔøçtɪptnɪçtdabaɪɪsdasðaɪnaɪntsiːɡədʒɔpzaɪnaɪntsiːɡə",
+  "heard": "ɛɾlɔøçtɪpnɪçtdabaɪɪsdasdaɪnaɪntsɪɡɜʃɔpzaɪnaɪntsɪɡə",
   "ipa": 0.196,
-  "ipaFlag": false,
-  "ratio": 0.96
+  "ratio": 0.91,
+  "ipaFlag": false
  },
  "ec3e4db9": {
   "dur": 5.92,
@@ -1580,14 +1580,14 @@
   "ratio": 1.02
  },
  "7c463558": {
-  "dur": 5.56,
-  "cps": 10.8,
+  "dur": 5.28,
+  "cps": 11.2,
   "tries": 1,
   "flag": false,
-  "heard": "dɑːʃtiːtlɔøçttuːəɡəʃlɔsənvjɛɾtəɪmwɪlaʊpvaɪjɔkɜ",
-  "ipa": 0.333,
-  "ipaFlag": false,
-  "ratio": 1.03
+  "heard": "dɑːʃdiːtlɔøçtuːmɡəʃlɔsənvɛɾtəɪmuːlaʊpmaɪjɔɾkɑː",
+  "ipa": 0.154,
+  "ratio": 0.97,
+  "ipaFlag": false
  },
  "e79328e3": {
   "dur": 4.6,
@@ -1600,14 +1600,14 @@
   "ratio": 0.95
  },
  "80e489e9": {
-  "dur": 4.8,
-  "cps": 13.5,
+  "dur": 4.48,
+  "cps": 15.4,
   "tries": 1,
   "flag": false,
-  "heard": "ɾasʃeːltblaɪktɪstɪstsdasaɪntsɪɡəçiːədasaɪnəndɔpmax",
-  "ipa": 0.267,
-  "ipaFlag": false,
-  "ratio": 0.96
+  "heard": "dasʃɪltblaɪktɛsɪstdasaɪntsɪɡɪhiːdasaɪnənʃɔpmax",
+  "ipa": 0.133,
+  "ratio": 0.91,
+  "ipaFlag": false
  },
  "59b893e3": {
   "dur": 6.12,
@@ -1910,24 +1910,24 @@
   "ratio": 1
  },
  "29935e56": {
-  "dur": 4.8,
-  "cps": 14.2,
+  "dur": 4.52,
+  "cps": 14.8,
   "tries": 1,
   "flag": false,
-  "heard": "raɪtakɪʃfavənnaxmajɔkɜsoːləndiːdɜstɔxzɛlbɛmaxən",
-  "ipa": 0.217,
-  "ipaFlag": false,
-  "ratio": 0.96
+  "heard": "laɪtakɪʃfɑːvənaxmaɪjɔkəsoːləndiːtɜsdɔxzɛlbɜmaxən",
+  "ipa": 0.196,
+  "ratio": 0.93,
+  "ipaFlag": false
  },
  "872e75a9": {
-  "dur": 3.32,
-  "cps": 13.3,
+  "dur": 3.68,
+  "cps": 13,
   "tries": 1,
   "flag": false,
-  "heard": "vaʊloːtɑːhazaɪnəndʒɔpveːɾklɪçɡəliːpt",
-  "ipa": 0.235,
-  "ipaFlag": false,
-  "ratio": 0.88
+  "heard": "aʊloːtɑːhatsaɪnɪnʃɔpveːɾklɪçɡəliː",
+  "ipa": 0.382,
+  "ratio": 0.76,
+  "ipaFlag": false
  },
  "ef6c404d": {
   "dur": 6.52,
@@ -1950,14 +1950,14 @@
   "ratio": 0.91
  },
  "3a171943": {
-  "dur": 5.08,
-  "cps": 15.6,
+  "dur": 5.24,
+  "cps": 15.1,
   "tries": 1,
   "flag": false,
-  "heard": "aɪnʃvɑːmɡlyːvəmçɪntanstʊmdiːriːzənbluːməhɛlɜaltsiːdətɪskoːkuːɡə",
-  "ipa": 0.19,
-  "ipaFlag": false,
-  "ratio": 0.91
+  "heard": "aɪnʃvɑːmɡlyːvyːmçənkanstʊndiːriːzənbluːməhɛlɜatsjeːdədɪskoːkuːbɪ",
+  "ipa": 0.207,
+  "ratio": 0.91,
+  "ipaFlag": false
  },
  "4b4cefb9": {
   "dur": 4.32,
@@ -2020,24 +2020,24 @@
   "ratio": 0.88
  },
  "1482d364": {
-  "dur": 5.67,
-  "cps": 11.2,
-  "tries": 2,
+  "dur": 5.27,
+  "cps": 12.7,
+  "tries": 1,
   "flag": false,
-  "heard": "obobinasaahadinafid",
-  "ipa": 1,
-  "ratio": 1.46,
+  "heard": "uo5ku5pu5fai5siɑ5phɑ5tɕi5fi.5t",
+  "ipa": 1.429,
+  "ratio": 2.07,
   "ipaFlag": true
  },
  "d44f4cb2": {
-  "dur": 5.92,
-  "cps": 9.8,
+  "dur": 5.52,
+  "cps": 11.2,
   "tries": 1,
   "flag": false,
-  "heard": "apɔøçkaɪnəzɔɡəiːɾbəkɔmtaɪnəndʒɔpmɪtaʊsɪç",
-  "ipa": 0.22,
-  "ipaFlag": false,
-  "ratio": 0.85
+  "heard": "ɑːpɔøçkaɪnəzɔɾɡəiːɾbəkɔmtaɪnənʃɔpmɪtaʊzɪçt",
+  "ipa": 0.171,
+  "ratio": 0.88,
+  "ipaFlag": false
  },
  "6ebc1b06": {
   "dur": 9.2,
@@ -2210,14 +2210,14 @@
   "ratio": 0
  },
  "bfc75d55": {
-  "dur": 5.36,
-  "cps": 10.1,
+  "dur": 3.2,
+  "cps": 16.6,
   "tries": 1,
   "flag": false,
-  "heard": "zɔriːkoːziːnəɪstfyːɾaɪnənɡuːtəntsvɛkfɛɾmʊtlɪç",
-  "ipa": 0.103,
-  "ipaFlag": false,
-  "ratio": 0.97
+  "heard": "zɔriːkoːziːnəɪstfɪɾaɪnənɡuːtəntsvɛ",
+  "ipa": 0.359,
+  "ratio": 0.72,
+  "ipaFlag": false
  },
  "a2f926e4": {
   "dur": 4.28,
@@ -2330,14 +2330,14 @@
   "ratio": 1.05
  },
  "7c5f82d0": {
-  "dur": 5.84,
-  "cps": 13,
+  "dur": 5,
+  "cps": 15,
   "tries": 1,
   "flag": false,
-  "heard": "axdɛlɔøçtɔmvɛɾtɜluːtaɪstɔfmaɪjoːɾkɜʊntiːlampɪskapʊt",
-  "ipa": 0.294,
-  "ipaFlag": false,
-  "ratio": 0.88
+  "heard": "axdɛɾlɔøʃtɔmvɛɾtɜluːtaɪstavmaɪjɔɾkɜʊndiːlampɪskapʊt",
+  "ipa": 0.255,
+  "ratio": 0.9,
+  "ipaFlag": false
  },
  "fc0e698b": {
   "dur": 5.48,
@@ -2400,34 +2400,34 @@
   "ratio": 0.94
  },
  "0b85bed9": {
-  "dur": 1.8,
-  "cps": 8.9,
+  "dur": 1.76,
+  "cps": 9.7,
   "tries": 1,
   "flag": false,
-  "heard": "ɪshɑːbətɑːmə",
-  "ipa": 0.333,
-  "ipaFlag": false,
-  "ratio": 0.83
+  "heard": "çhabəʃam",
+  "ipa": 0.364,
+  "ratio": 0.73,
+  "ipaFlag": false
  },
  "657141e5": {
-  "dur": 2.48,
-  "cps": 15.3,
-  "tries": 1,
+  "dur": 3.44,
+  "cps": 11.3,
+  "tries": 5,
   "flag": false,
-  "heard": "ɑːməlɛszɪʃlɛçtfɾətiːrən",
-  "ipa": 0.296,
-  "ipaFlag": false,
-  "ratio": 0.78
+  "heard": "ʃɑːmlɪszɪʃlɛçtfɾətiːrən",
+  "ipa": 0.308,
+  "ratio": 0.81,
+  "ipaFlag": false
  },
  "cc203f24": {
-  "dur": 6.32,
-  "cps": 16.8,
+  "dur": 6.36,
+  "cps": 17.1,
   "tries": 1,
   "flag": false,
-  "heard": "vɜvaɪstʊvasvɛnmeːɛntlɪçiːmɜtændandəðəsliːtaftɛjuːkbɔksʃpiːtɡiːptspɑːmɪsʊnzɔnst",
-  "ipa": 0.273,
-  "ipaFlag": false,
-  "ratio": 0.9
+  "heard": "bɜvaɪstʊvasvɛnmeːɛntlɪçiːmɜdænandərəsliːtaftɛɾʃuːpbɔksʃpiːdɡɪpspaməsʊmzɔnst",
+  "ipa": 0.221,
+  "ratio": 0.9,
+  "ipaFlag": false
  },
  "b2b1d108": {
   "dur": 5.96,
@@ -2580,14 +2580,14 @@
   "ratio": 0.86
  },
  "2fb9a372": {
-  "dur": 3.96,
-  "cps": 11.4,
+  "dur": 3.92,
+  "cps": 12,
   "tries": 1,
   "flag": false,
-  "heard": "tʃaʊʃɛtsɪnnɛstɪsmamɪtɾɪŋkeːd",
-  "ipa": 0.312,
-  "ipaFlag": false,
-  "ratio": 0.75
+  "heard": "ʃaʊʃɛtsənnaɪstasmaɪmɪtrɪŋkɪ",
+  "ipa": 0.438,
+  "ratio": 0.72,
+  "ipaFlag": false
  },
  "622b7f4f": {
   "dur": 3.52,
@@ -3520,14 +3520,14 @@
   "ratio": 1
  },
  "ba75a295": {
-  "dur": 4.92,
-  "cps": 14,
+  "dur": 5.8,
+  "cps": 12.6,
   "tries": 1,
   "flag": false,
-  "heard": "liːbəlyːvyːmɕəniːɛɾhaptaɪnənoːəndʒɔplɔøçttoːmbəlɔøstʊŋ",
-  "ipa": 0.271,
-  "ipaFlag": false,
-  "ratio": 0.94
+  "heard": "liːbəblyːvyːmɕəniːɾhaptaɪnənnɔøənʃɔplɔøsttoːəmbəlɔøstʊŋ",
+  "ipa": 0.229,
+  "ratio": 0.96,
+  "ipaFlag": false
  },
  "5244b80d": {
   "dur": 2.4,
@@ -3600,14 +3600,14 @@
   "ratio": 1
  },
  "8ba4ab80": {
-  "dur": 5.74,
-  "cps": 14.6,
+  "dur": 5.5,
+  "cps": 16,
   "tries": 1,
   "flag": false,
-  "heard": "ɔøəɡɑːkandɪnɡoːɡənvaɪtsɜnɪçtmɛhyːrənvɪlfdeːntɑːlɜɪndɪjuːkbɔks",
-  "ipa": 0.218,
-  "ipaFlag": false,
-  "ratio": 0.95
+  "heard": "ɔølɡɑːkandəŋɡoːɡənvaɪtsanɪçtmɛhyːrənvɪlfdeːntɑːlɜɪndiːtʃuːkbɔks",
+  "ipa": 0.255,
+  "ratio": 0.95,
+  "ipaFlag": false
  },
  "d61dff7a": {
   "dur": 3.75,
@@ -3940,13 +3940,13 @@
   "ipaFlag": false
  },
  "188d3f00": {
-  "dur": 4.6,
-  "cps": 14.8,
-  "tries": 2,
+  "dur": 4.48,
+  "cps": 15.6,
+  "tries": 1,
   "flag": false,
-  "heard": "uːsbɛstafhɔøntkɔmtsʊmaɪnɜʃoʊiːçapbaɪtaɪnəʃoː",
-  "ipa": 0.293,
-  "ratio": 0.88,
+  "heard": "yzbɛsdɛɾfloɪntkɔntsʊmaɪnəʃoːiːçɑːbaltaɪnəʃoːmaɪ",
+  "ipa": 0.333,
+  "ratio": 1,
   "ipaFlag": false
  },
  "877da326": {
