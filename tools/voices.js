@@ -67,7 +67,7 @@ const CAST = {
   olga:     CB('mls-4533', { exaggeration: 0.7, cfg: 0.4 }),
   guenther: CB('thorsten-angry', { exaggeration: 0.9, cfg: 0.4, semis: 3 }),
   lama:     CB('thorsten-sleepy', { exaggeration: 0.35, semis: -2, tempo: 0.92 }),
-  lamaHappy:PIPER_CAST.lamaHappy,
+  lamaHappy:CB('thorsten-amused', { exaggeration: 0.9, cfg: 0.4, semis: -2 }),
   krabbe:   CB('thorsten-whisper', { exaggeration: 0.3 }),
   gw:       CB('mls-1091', { exaggeration: 0.7, cfg: 0.4, semis: 3, chorus: 5 }),
   tukan:    CB('mls-8294', { exaggeration: 0.9, cfg: 0.4, semis: 2 }),
