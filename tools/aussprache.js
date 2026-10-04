@@ -64,6 +64,7 @@ const LEXIKON = [
   [/\bStil\b/g, 'S-Til'],
   [/\bPOO+MMEE+S\b/g, 'Pooommes'],
   [/\bPARTYY+\b/g, 'Paaarty'],
+  [/\b[Kk]nusprig\b/g, 'Knus-Prig'],
   // Abkürzungen
   [/\bca\.\s*/g, 'zirka '],
   [/\bMS\b/g, 'Em Es'],

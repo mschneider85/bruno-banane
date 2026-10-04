@@ -1,6 +1,6 @@
 // Service Worker: macht das Spiel offline spielbar.
 // Nach Änderungen an Spieldateien VERSION erhöhen.
-const VERSION = 'bruno-v9';
+const VERSION = 'bruno-v10';
 const FONTS = 'bruno-fonts';
 const ASSETS = [
   './', 'index.html', 'style.css', 'content.js', 'engine.js', 'manifest.webmanifest',

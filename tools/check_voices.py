@@ -16,6 +16,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import librosa  # noqa: E402
+import numpy as np  # noqa: E402
 import torch  # noqa: E402
 from huggingface_hub import hf_hub_download  # noqa: E402
 from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForCTC  # noqa: E402
@@ -61,7 +62,26 @@ VOWELS = set("aeiouyøəIUY")
 FRAME = 0.02  # wav2vec2: 320 Samples bei 16 kHz
 
 
-def tail_cut(expected, tokens, total):
+def gap_burst(y, end_time):
+    """Nach dem Textende: erst Pause (≥ 0,12 s unter -40 dB), danach wieder hörbar (> -30 dB)?
+    Dann ist das ein abgehackter Nachklang. Gibt die Schnittzeit in der Pause zurück."""
+    if y is None:
+        return None
+    rms = librosa.feature.rms(y=y, frame_length=320, hop_length=160)[0]
+    db = 20 * np.log10(rms / (rms.max() + 1e-9) + 1e-9)
+    i, quiet = int(end_time / 0.01), 0
+    while i < len(db):
+        quiet = quiet + 1 if db[i] < -40 else 0
+        if quiet >= 12:
+            start = i - quiet + 1
+            if (db[i + 1:] > -30).any():
+                return round(start * 0.01 + 0.06, 2)
+            return None
+        i += 1
+    return None
+
+
+def tail_cut(expected, tokens, total, y=None):
     """Findet angehängte Wortschnipsel: gleicht die erwarteten mit den gehörten Lauten ab.
     Liegt nach dem letzten zum Text passenden Laut noch eine Silbe, wird die Schnittzeit
     (Sekunden) und der Schnipsel zurückgegeben, sonst (None, "")."""
@@ -101,6 +121,10 @@ def tail_cut(expected, tokens, total):
     cut = (rec[last][1] + 1) * FRAME + 0.12
     if len(tail) >= 2 and any(ch in VOWELS for ch in tail) and total - cut >= 0.15 and cut > total * 0.5:
         return round(cut, 2), tail
+    # Abgehackter Nachklang nach einer Pause (z. B. ein einzelnes „o“)
+    gap = gap_burst(y, (rec[last][1] + 1) * FRAME)
+    if gap and total - gap >= 0.08 and gap > total * 0.5:
+        return gap, "Nachklang " + (tail or "?")
     return None, ""
 
 
@@ -138,7 +162,7 @@ def main():
         y, _ = librosa.load(job["file"], sr=16000)
         toks = rec.tokens(y, 16000)
         heard = "".join(t for t, _, _ in toks)
-        cut, tail = tail_cut(job["expected"], toks, len(y) / 16000) if job.get("tail") else (None, "")
+        cut, tail = tail_cut(job["expected"], toks, len(y) / 16000, y) if job.get("tail") else (None, "")
         print(json.dumps({"key": job["key"], "heard": heard, "dist": round(dist(job["expected"], heard), 3),
                           "ratio": round(ratio(job["expected"], heard), 2), "cut": cut, "tail": tail},
                          ensure_ascii=False), flush=True)

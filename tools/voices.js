@@ -8,7 +8,7 @@
  *   node tools/voices.js --review   Prüfseite voice-samples/review.html mit allen Sätzen
  *   node tools/voices.js --check    alle Sätze per Lauterkennung prüfen (markiert Genuschel/Fehler)
  *   node tools/voices.js --redo     auffällige Sätze neu vertonen, bester von bis zu 5 Versuchen per Lauterkennung
- *   node tools/voices.js --trim     angehängte Wortschnipsel am Satzende finden und abschneiden
+ *   node tools/voices.js --trim     angehängte Wortschnipsel am Satzende finden und abschneiden (--dry: nur anzeigen)
  *   node tools/voices.js --list     nur die gefundenen Sätze ausgeben
  *   node tools/voices.js --ipa "Text"  eSpeak-Lautschrift prüfen (nur Piper), siehe tools/aussprache.js
  *
@@ -381,6 +381,7 @@ async function trim(lines) {
   }).map(([k]) => k);
   console.log(`${keys.length} Sätze werden auf Schnipsel am Ende geprüft`);
   const cuts = await check(lines, keys, { tail: true, quiet: true });
+  if (process.argv.includes('--dry')) { for (const c of cuts) { const l = lines.get(c.key); console.log(`  (✂) ${c.key} ${l.who.padEnd(8)} „${l.text}“ ab ${c.cut}s: ${c.tail}`); } console.log(`${cuts.length} Schnitte (Trockenlauf)`); return cuts; }
   for (const c of cuts) {
     const f = path.join(OUT, c.key + '.mp3'), tmp = f + '.tmp.mp3';
     await run('ffmpeg', ['-v', 'error', '-y', '-i', f, '-af', `atrim=end=${c.cut},afade=t=out:st=${Math.max(0, c.cut - 0.04).toFixed(2)}:d=0.04`, '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '40k', tmp]);

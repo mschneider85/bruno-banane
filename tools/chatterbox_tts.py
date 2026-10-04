@@ -108,7 +108,9 @@ def main():
         wav, dur, cps, _, ok, toks = best
         if toks:
             # angehängten Wortschnipsel abschneiden (mit kurzem Ausblenden)
-            cut, _tail = tail_cut(expected, toks, dur)
+            import librosa
+            y16 = librosa.resample(wav.squeeze().cpu().numpy(), orig_sr=model.sr, target_sr=16000)
+            cut, _tail = tail_cut(expected, toks, dur, y16)
             if cut:
                 n = int(cut * model.sr)
                 fade = torch.linspace(1, 0, int(0.04 * model.sr))
