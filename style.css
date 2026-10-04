@@ -270,6 +270,11 @@ h1 {
 .small { font-size: 1.7cqw; padding: .6cqw 1.8cqw; background: #fff; }
 .big:hover, .small:hover { transform: translateY(-.3cqw) rotate(-2deg); }
 .big:active, .small:active { transform: translateY(.4cqw); box-shadow: 0 .15cqw 0 var(--ink); }
+#tLoading { margin-top: 1.6cqw; width: 34cqw; text-align: center; color: #fff; font-weight: 700; font-size: 1.6cqw; text-shadow: 0 .2cqw 0 var(--ink); }
+#tLoading .bar { margin-top: .5cqw; height: 1.2cqw; border: .25cqw solid var(--ink); border-radius: 1cqw; background: #ffffff55; overflow: hidden; }
+#tLoading .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff3d6e, #ffd60a, #2fe07a); transition: width .2s; }
+#tVoiceWarn { margin-top: 1.2cqw; max-width: 40cqw; text-align: center; font-size: 1.4cqw; color: #fff; background: #2a1748cc; padding: .4cqw 1cqw; border-radius: 1cqw; }
+.big:disabled, .small:disabled { opacity: .5; cursor: wait; transform: none; }
 .credits { position: absolute; bottom: 1.6cqw; color: #fff; font-weight: 700; font-size: 1.5cqw; text-shadow: 0 .2cqw 0 var(--ink); }
 
 .panel {

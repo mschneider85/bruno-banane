@@ -6,13 +6,16 @@
 const W = 1280, H = 720;
 const SAVE_KEY = 'bruno-banane-save-v1';
 const $ = q => document.querySelector(q);
-const wait = ms => new Promise(r => setTimeout(r, ms));
+// Abbruch laufender Skripte (Neues Spiel, Titelbild): wartende Schritte werfen CANCEL
+const CANCEL = { cancelled: true };
+const wait = ms => { const sess = G.session; return new Promise((ok, no) => setTimeout(() => sess === G.session ? ok() : no(CANCEL), ms)); };
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const val = x => typeof x === 'function' ? x() : x;
 
 let S = null; // Spielstand (wird gespeichert)
-const G = { busy: false, dialog: false, sel: null, skip: null, hx: 300, hy: 620, dir: 1, walkId: 0, hero: null, verbObj: null, finished: false };
+const G = { busy: false, dialog: false, sel: null, skip: null, hx: 300, hy: 620, dir: 1, walkId: 0, hero: null, verbObj: null, finished: false,
+  session: 0, paused: false, resume: [], interrupt: null, rejectChoice: null };
 
 function newState() {
   return { scene: 'hafen', inv: [], flags: {}, hx: 300, hy: 610, dir: 1, clicks: 0, start: Date.now() };
@@ -144,7 +147,19 @@ function actorPos(who) {
   if (o && o.head) return val(o.head);
   return (ACTORS[who] && ACTORS[who].pos) || [640, 160];
 }
-function say(text, who = 'hero') {
+// Spricht eine Zeile. Im Menü (Pause) wird die laufende Zeile abgebrochen und danach wiederholt;
+// nach Neues Spiel/Titelbild wirft sie CANCEL, damit das alte Skript endet.
+async function say(text, who = 'hero') {
+  const sess = G.session;
+  for (;;) {
+    if (G.paused) await new Promise(r => G.resume.push(r));
+    if (sess !== G.session) throw CANCEL;
+    const how = await sayOnce(text, who);
+    if (sess !== G.session) throw CANCEL;
+    if (how !== 'paused') return;
+  }
+}
+function sayOnce(text, who) {
   return new Promise(res => {
     const el = $('#speech');
     const [x, y] = actorPos(who);
@@ -155,15 +170,16 @@ function say(text, who = 'hero') {
     const talker = who === 'hero' ? G.hero : document.querySelector(`[data-actor="${who}"]`);
     if (talker) talker.classList.add('talking');
     let done = false, t = null, voice = null;
-    const fin = () => {
+    const fin = how => {
       if (done) return; done = true;
-      clearTimeout(t); G.skip = null;
+      clearTimeout(t); G.skip = null; G.interrupt = null;
       if (voice) voice.stop();
       el.className = '';
       if (talker) talker.classList.remove('talking');
-      setTimeout(res, 90);
+      if (how === 'paused') res(how); else setTimeout(res, 90);
     };
-    G.skip = fin;
+    G.skip = () => fin('skip');
+    G.interrupt = () => fin('paused');
     const fallback = () => { blip(who); t = setTimeout(fin, Math.max(1500, 800 + text.length * 52)); };
     const key = voiceKey(who, text);
     if (Snd.voiceOn && VOICE.has(key)) {
@@ -199,13 +215,42 @@ async function run(h, ...args) {
 // Ein Skript blockiert die Eingabe, bis es fertig ist
 async function script(fn) {
   if (G.busy) return;
+  const sess = G.session;
   G.busy = true; hideMenus(); setLabel('');
   try { await fn(); }
-  catch (e) { console.error(e); }
+  catch (e) { if (e !== CANCEL) console.error(e); }
   finally {
-    G.busy = false; G.sel = null;
-    if (!G.finished) { renderInv(); renderObjects(); save(); }
+    // abgebrochene Skripte dürfen den neuen Spielstand nicht mehr anfassen
+    if (sess === G.session) {
+      G.busy = false; G.sel = null;
+      if (!G.finished) { renderInv(); renderObjects(); save(); }
+    }
   }
+}
+
+// Alles Laufende sofort beenden: Skript, Stimme, Dialog, Laufen, Musik
+function stopAll() {
+  G.session++; G.walkId++;
+  G.paused = false; G.resume.splice(0).forEach(r => r());
+  if (G.skip) G.skip();
+  if (G.rejectChoice) { const r = G.rejectChoice; G.rejectChoice = null; r(CANCEL); }
+  $('#dialog').hidden = true; $('#speech').className = '';
+  if (G.hero) G.hero.classList.remove('walking');
+  G.busy = false; G.dialog = false; G.sel = null;
+  pauseMusic();
+}
+// Menü = Pause: Stimme und Musik verstummen, der nächste Satz wartet aufs Weiterspielen
+function pauseGame() {
+  if (G.paused) return;
+  G.paused = true;
+  if (G.interrupt) G.interrupt();
+  pauseMusic();
+}
+function resumeGame() {
+  if (!G.paused) return;
+  G.paused = false;
+  resumeMusic();
+  G.resume.splice(0).forEach(r => r());
 }
 
 function interact(o, verb, item) {
@@ -239,7 +284,8 @@ function combine(a, b) {
 
 // ---------- Dialoge ----------
 function choose(opts) {
-  return new Promise(res => {
+  return new Promise((res, rej) => {
+    G.rejectChoice = rej;
     const d = $('#dialog');
     d.innerHTML = opts.map((o, i) => `<button data-i="${i}">${o}</button>`).join('');
     d.hidden = false;
@@ -247,7 +293,7 @@ function choose(opts) {
       const b = e.target.closest('button');
       if (!b) return;
       sfx('click');
-      d.hidden = true; d.onclick = null;
+      d.hidden = true; d.onclick = null; G.rejectChoice = null;
       res(+b.dataset.i);
     };
   });
@@ -311,7 +357,7 @@ function toSvg(e) {
 function freeWalk(x, y) {
   const [, , msg] = clampWalk(x, y);
   walkTo(x, y).then(async ok => {
-    if (ok && msg && !G.busy) { G.busy = true; await say(msg); G.busy = false; }
+    if (ok && msg) script(() => say(msg));
   });
 }
 function lookSelf() {
@@ -396,8 +442,8 @@ function bindUI() {
   $('#mResume').onclick = closeMenu;
   $('#mHelp').onclick = () => { $('#help').hidden = !$('#help').hidden; };
   $('#mFull').onclick = toggleFullscreen;
-  $('#mNew').onclick = () => { if (confirm('Wirklich ein neues Spiel starten? Der aktuelle Spielstand geht verloren.')) { closeMenu(); startGame(true); } };
-  $('#mTitle').onclick = () => { save(); closeMenu(); showTitle(); };
+  $('#mNew').onclick = () => { if (confirm('Wirklich ein neues Spiel starten? Der aktuelle Spielstand geht verloren.')) { stopAll(); closeMenu(); startGame(true); } };
+  $('#mTitle').onclick = () => { save(); stopAll(); closeMenu(); showTitle(); };
   $('#tNew').onclick = () => startGame(true);
   $('#tLoad').onclick = () => startGame(false);
   $('#tFull').onclick = toggleFullscreen;
@@ -414,8 +460,8 @@ function bindUI() {
   });
 }
 
-function openMenu() { hideMenus(); $('#help').hidden = true; $('#menu').hidden = false; }
-function closeMenu() { $('#menu').hidden = true; }
+function openMenu() { hideMenus(); $('#help').hidden = true; $('#menu').hidden = false; pauseGame(); }
+function closeMenu() { $('#menu').hidden = true; resumeGame(); }
 function toggleFullscreen() {
   const d = document;
   if (!d.fullscreenElement) (d.documentElement.requestFullscreen || d.documentElement.webkitRequestFullscreen || (() => {})).call(d.documentElement)?.catch?.(() => {});
@@ -434,11 +480,14 @@ function loadSave() {
 
 // ---------- Start / Ende ----------
 function showTitle() {
+  stopAll();
   playSong(null);
   $('#tLoad').hidden = !loadSave();
   $('#title').hidden = false;
 }
 async function startGame(fresh) {
+  if (!Voices.ready && Snd.voiceOn) return;
+  stopAll();
   ensureAudio();
   S = (!fresh && loadSave()) || newState();
   if (fresh) S.start = Date.now();
@@ -536,13 +585,43 @@ function voiceKey(who, text) {
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return (h >>> 0).toString(16).padStart(8, '0');
 }
+const voiceData = new Map(); // vorgeladene MP3-Daten
+const Voices = { ready: false, total: 0, loaded: 0, failed: 0 };
+// Lädt alle Sprachdateien vor dem Spielstart (mit Fortschritt auf dem Titelbild)
+async function preloadVoices(onProgress) {
+  let keys = [];
+  try { const r = await fetch('voice/index.json'); if (r.ok) keys = await r.json(); } catch (e) { /* offline ohne Cache */ }
+  keys.forEach(k => VOICE.add(k));
+  Voices.total = keys.length;
+  onProgress();
+  const queue = [...keys];
+  const worker = async () => {
+    while (queue.length) {
+      const k = queue.shift();
+      let ok = false;
+      for (let a = 0; a < 3 && !ok; a++) {
+        try { const r = await fetch(`voice/${k}.mp3`); if (r.ok) { voiceData.set(k, await r.arrayBuffer()); ok = true; } }
+        catch (e) { await new Promise(r => setTimeout(r, 500 * (a + 1))); }
+      }
+      if (ok) Voices.loaded++; else Voices.failed++;
+      onProgress();
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  Voices.ready = true;
+  onProgress();
+}
 async function loadVoice(key) {
   if (voiceCache.has(key)) return voiceCache.get(key);
   const c = ensureAudio();
   if (!c) throw new Error('kein Audio');
-  const res = await fetch(`voice/${key}.mp3`);
-  if (!res.ok) throw new Error(res.status);
-  const data = await res.arrayBuffer();
+  let data;
+  if (voiceData.has(key)) data = voiceData.get(key).slice(0); // decodeAudioData verbraucht den Puffer
+  else {
+    const res = await fetch(`voice/${key}.mp3`);
+    if (!res.ok) throw new Error(res.status);
+    data = await res.arrayBuffer();
+  }
   const buf = await new Promise((ok, bad) => c.decodeAudioData(data, ok, bad));
   voiceCache.set(key, buf);
   if (voiceCache.size > 24) voiceCache.delete(voiceCache.keys().next().value);
@@ -574,12 +653,20 @@ function nf(n) {
   const semi = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] ? 1 : 0);
   return 440 * Math.pow(2, (12 * (+m[3] + 1) + semi - 69) / 12);
 }
+// Musik sofort verstummen lassen (auch schon vorausgeplante Töne), Song bleibt gemerkt
+function pauseMusic() {
+  clearInterval(Snd.timer); Snd.timer = null;
+  if (Snd.mus) { const t = Snd.ctx.currentTime; Snd.mus.gain.cancelScheduledValues(t); Snd.mus.gain.setValueAtTime(0, t); }
+}
+function resumeMusic() { if (Snd.cur && !G.paused) playSong(Snd.cur); }
 function playSong(name) {
   if (Snd.cur === name && Snd.timer) return;
   clearInterval(Snd.timer); Snd.timer = null;
   Snd.cur = name;
   const c = ensureAudio();
-  if (!name || !c || !Snd.on) return;
+  if (!name || !c || !Snd.on || G.paused) return;
+  const now = c.currentTime;
+  Snd.mus.gain.cancelScheduledValues(now); Snd.mus.gain.setValueAtTime(0, now); Snd.mus.gain.linearRampToValueAtTime(.5, now + .2);
   const song = SONGS[name], stepDur = 60 / song.bpm / 2;
   const tracks = song.tracks.map(tr => ({ ...tr, seq: tr.seq.trim().split(/\s+/) }));
   let step = 0, next = c.currentTime + .1;
@@ -624,7 +711,18 @@ function init() {
   $('#titleHero').innerHTML = HERO_SVG;
   $('#btnSound').textContent = Snd.on ? '🔊' : '🔇';
   setVoice(Snd.voiceOn);
-  fetch('voice/index.json').then(r => r.ok ? r.json() : []).then(keys => keys.forEach(k => VOICE.add(k))).catch(() => {});
+  // Spielstart erst, wenn die Stimmen geladen sind (oder die Sprachausgabe aus ist)
+  const progress = () => {
+    const pct = Voices.total ? Math.round((Voices.loaded + Voices.failed) / Voices.total * 100) : 0;
+    const ready = Voices.ready || !Snd.voiceOn;
+    $('#tNew').disabled = $('#tLoad').disabled = !ready;
+    $('#tLoading').hidden = Voices.ready;
+    $('#tLoading b').textContent = pct + ' %';
+    $('#tLoading i').style.width = pct + '%';
+    $('#tVoiceWarn').hidden = !(Voices.ready && (Voices.failed || !Voices.total));
+  };
+  progress();
+  preloadVoices(progress);
   $('#tInstall').onclick = async () => {
     if (!installPrompt) return;
     installPrompt.prompt();
