@@ -78,7 +78,8 @@ def tail_cut(expected, tokens, total):
     for i in range(1, n + 1):
         for j in range(1, m + 1):
             d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (exp[i - 1] != rec[j - 1][0]))
-    # Rückverfolgung: letzter gehörter Laut, der einem erwarteten Laut zugeordnet ist
+    row = d[n]
+    # 1) Letzter gehörter Laut, der in der besten Gesamtzuordnung einem erwarteten Laut entspricht
     i, j, last = n, m, None
     while i > 0 and j > 0:
         if d[i][j] == d[i - 1][j - 1] + (exp[i - 1] != rec[j - 1][0]):
@@ -88,6 +89,12 @@ def tail_cut(expected, tokens, total):
             j -= 1
         else:
             i -= 1
+    # 2) Echo des letzten Wortes („fettig … effig“): Ein früheres Ende deckt den Text genauso gut ab,
+    #    und der Rest danach wäre fast nur Zusatzlaut. Nur dann gilt das frühere Ende.
+    best = min(row[1:])
+    early = next(j for j in range(1, m + 1) if row[j] <= best)
+    if (last is None or early - 1 < last) and row[m] - best >= 0.6 * (m - early) and m - early >= 3:
+        last = early - 1
     if last is None:
         return None, ""
     tail = "".join(ch for ch, _ in rec[last + 1:])
