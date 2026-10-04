@@ -8,6 +8,7 @@
  *   node tools/voices.js --review   Prüfseite voice-samples/review.html mit allen Sätzen
  *   node tools/voices.js --check    alle Sätze per Lauterkennung prüfen (markiert Genuschel/Fehler)
  *   node tools/voices.js --redo     auffällige Sätze neu vertonen, bester von bis zu 5 Versuchen per Lauterkennung
+ *   node tools/voices.js --trim     angehängte Wortschnipsel am Satzende finden und abschneiden
  *   node tools/voices.js --list     nur die gefundenen Sätze ausgeben
  *   node tools/voices.js --ipa "Text"  eSpeak-Lautschrift prüfen (nur Piper), siehe tools/aussprache.js
  *
@@ -338,13 +339,14 @@ async function phonemize(texts) {
   if (rows.length !== texts.length) throw new Error('Lautschrift: Zeilenzahl passt nicht');
   return rows;
 }
-async function check(lines, only) {
+async function check(lines, only, { tail = false, quiet = false } = {}) {
   const items = [...lines].filter(([k]) => !only || only.includes(k)).map(([k, l]) => ({ k, l, c: castFor(l.who, l.text) }));
   const expected = await phonemize(items.map(i => stripTags(spoken(i.l.text, i.c)) || '-'));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bruno-check-'));
   const file = path.join(tmp, 'jobs.json');
-  fs.writeFileSync(file, JSON.stringify(items.map((i, n) => ({ key: i.k, file: path.join(OUT, i.k + '.mp3'), expected: expected[n] }))));
+  fs.writeFileSync(file, JSON.stringify(items.map((i, n) => ({ key: i.k, file: path.join(OUT, i.k + '.mp3'), expected: expected[n], tail }))));
   const rep = fs.existsSync(REPORT) ? JSON.parse(fs.readFileSync(REPORT, 'utf8')) : {};
+  const cuts = [];
   let done = 0;
   await new Promise((res, rej) => {
     const p = spawn(CHATTERBOX_PY, [path.join(__dirname, 'check_voices.py'), file], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -354,6 +356,7 @@ async function check(lines, only) {
       let r; try { r = JSON.parse(l); } catch (e) { return; }
       const ln = lines.get(r.key), sound = /⟦/.test(spoken(ln.text, castFor(ln.who, ln.text)));
       // Geräusche und Chor erhöhen die gehörte Lautzahl – dort zählt nur die Abweichung
+      if (r.cut) cuts.push({ key: r.key, cut: r.cut, tail: r.tail });
       rep[r.key] = { ...(rep[r.key] || {}), heard: r.heard, ipa: r.dist, ratio: r.ratio,
         ipaFlag: r.dist > IPA_LIMIT || (!sound && ln.who !== 'gw' && r.ratio > RATIO_LIMIT) };
       if (++done % 20 === 0) process.stdout.write(`\r  Lauterkennung ${done}/${items.length}`);
@@ -362,10 +365,31 @@ async function check(lines, only) {
   });
   fs.rmSync(tmp, { recursive: true, force: true });
   fs.writeFileSync(REPORT, JSON.stringify(rep, null, 1));
+  if (quiet) return cuts;
   const bad = items.filter(i => rep[i.k] && rep[i.k].ipaFlag).sort((a, b) => rep[b.k].ipa - rep[a.k].ipa);
   console.log(`${bad.length} von ${items.length} Sätzen auffällig (Abweichung > ${IPA_LIMIT} oder Länge > ${RATIO_LIMIT}):`);
   for (const i of bad) console.log(`  ${rep[i.k].ipa.toFixed(2)} ×${rep[i.k].ratio} ${i.k} ${i.l.who.padEnd(8)} ${i.l.text}`);
   review(lines);
+  return cuts;
+}
+
+// Angehängte Wortschnipsel in fertigen Dateien abschneiden
+async function trim(lines) {
+  const keys = [...lines].filter(([, l]) => {
+    const c = castFor(l.who, l.text), segs = segments(spoken(l.text, c));
+    return c.engine === 'chatterbox' && l.who !== 'gw' && segs.length && !segs[segs.length - 1].tag;
+  }).map(([k]) => k);
+  console.log(`${keys.length} Sätze werden auf Schnipsel am Ende geprüft`);
+  const cuts = await check(lines, keys, { tail: true, quiet: true });
+  for (const c of cuts) {
+    const f = path.join(OUT, c.key + '.mp3'), tmp = f + '.tmp.mp3';
+    await run('ffmpeg', ['-v', 'error', '-y', '-i', f, '-af', `atrim=end=${c.cut},afade=t=out:st=${Math.max(0, c.cut - 0.04).toFixed(2)}:d=0.04`, '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '40k', tmp]);
+    fs.renameSync(tmp, f);
+    const l = lines.get(c.key);
+    console.log(`  ✂ ${c.key} ${l.who.padEnd(8)} „${l.text}“  – abgeschnitten ab ${c.cut}s, Schnipsel: ${c.tail}`);
+  }
+  console.log(`${cuts.length} Schnipsel abgeschnitten`);
+  if (cuts.length) await check(lines, cuts.map(c => c.key));
 }
 
 // ---------- Prüfseite ----------
@@ -400,6 +424,7 @@ if (require.main === module) (async () => {
   if (argv.includes('--list')) { for (const [k, l] of lines) console.log(k, l.who.padEnd(8), l.text); console.log(lines.size, 'Sätze'); return; }
   if (argv.includes('--review')) return review(lines);
   if (argv.includes('--check')) return check(lines);
+  if (argv.includes('--trim')) return trim(lines);
   if (argv.includes('--redo')) {
     const rep = fs.existsSync(REPORT) ? JSON.parse(fs.readFileSync(REPORT, 'utf8')) : {};
     const keys = [...lines.keys()].filter(k => rep[k] && rep[k].ipaFlag && castFor(lines.get(k).who, lines.get(k).text).engine === 'chatterbox');

@@ -67,7 +67,7 @@ def main():
     rec = None
     if any(j.get("expected") for j in jobs):
         sys.path.insert(0, __import__("os").path.dirname(__file__))
-        from check_voices import Recognizer, dist as ipa_dist, ratio as ipa_ratio
+        from check_voices import Recognizer, dist as ipa_dist, ratio as ipa_ratio, tail_cut
         rec = Recognizer("cpu")  # GPU-Speicher reicht nicht für beide Modelle
     print(json.dumps({"ready": device}), flush=True)
 
@@ -93,7 +93,8 @@ def main():
             cps = len(text) / max(dur, 0.1)
             ok = MIN_CPS <= cps <= MAX_CPS or len(text) < 20
             if expected:
-                heard = rec.heard(wav.squeeze().cpu().numpy(), model.sr)
+                toks = rec.tokens(wav.squeeze().cpu().numpy(), model.sr)
+                heard = "".join(t for t, _, _ in toks)
                 d, r = ipa_dist(expected, heard), ipa_ratio(expected, heard)
                 score = d + max(0.0, r - 1.0) + (0 if ok else 0.5)
                 ok = ok and d <= GOOD_DIST and r <= MAX_RATIO
@@ -101,10 +102,19 @@ def main():
                 # bei mehreren Fehlversuchen den mit der plausibelsten Geschwindigkeit nehmen
                 score = abs(cps - 14)
             if best is None or score < best[3]:
-                best = (wav, dur, cps, score, ok)
+                best = (wav, dur, cps, score, ok, toks if expected else None)
             if ok:
                 break
-        wav, dur, cps, _, ok = best
+        wav, dur, cps, _, ok, toks = best
+        if toks:
+            # angehängten Wortschnipsel abschneiden (mit kurzem Ausblenden)
+            cut, _tail = tail_cut(expected, toks, dur)
+            if cut:
+                n = int(cut * model.sr)
+                fade = torch.linspace(1, 0, int(0.04 * model.sr))
+                wav = wav[..., :n].clone()
+                wav[..., -fade.shape[0]:] *= fade
+                dur = n / model.sr
         torchaudio.save(job["out"], wav.cpu(), model.sr)
         print(json.dumps({"out": job["out"], "dur": round(dur, 2), "cps": round(cps, 1),
                           "tries": attempt + 1, "flag": not ok}), flush=True)
