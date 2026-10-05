@@ -114,9 +114,13 @@ def main():
             if cut:
                 n = int(cut * model.sr)
                 fade = torch.linspace(1, 0, int(0.04 * model.sr))
-                wav = wav[..., :n].clone()
-                wav[..., -fade.shape[0]:] *= fade
-                dur = n / model.sr
+                cand = wav[..., :n].clone()
+                cand[..., -fade.shape[0]:] *= fade
+                # Gegenprobe: nach dem Schnitt darf nicht weniger vom Text zu hören sein
+                before = ipa_dist(expected, "".join(t for t, _, _ in toks))
+                after = ipa_dist(expected, rec.heard(cand.squeeze().cpu().numpy(), model.sr))
+                if after <= before + 0.01:
+                    wav, dur = cand, n / model.sr
         torchaudio.save(job["out"], wav.cpu(), model.sr)
         print(json.dumps({"out": job["out"], "dur": round(dur, 2), "cps": round(cps, 1),
                           "tries": attempt + 1, "flag": not ok}), flush=True)

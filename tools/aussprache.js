@@ -56,6 +56,7 @@ const NUR_CHATTERBOX = [
   [/\bCiao\b/g, 'Tschau'],
   [/\bTouristen\b/g, 'Turisten'],
   [/\bLimo\b/g, 'Limmo'],
+  [/\bSalz\b/g, 'Sallz'],
 ];
 
 const LEXIKON = [

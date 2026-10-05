@@ -10,6 +10,7 @@
  *   node tools/voices.js --redo     auffällige Sätze neu vertonen, bester von bis zu 5 Versuchen per Lauterkennung
  *   node tools/voices.js --trim     angehängte Wortschnipsel am Satzende finden und abschneiden (--dry: nur anzeigen)
  *   node tools/voices.js --list     nur die gefundenen Sätze ausgeben
+ *   node tools/voices.js --neu "Textstück"  passende Sätze mit neuer Zufallszahl neu vertonen (z. B. bei Nachklang)
  *   node tools/voices.js --ipa "Text"  eSpeak-Lautschrift prüfen (nur Piper), siehe tools/aussprache.js
  *
  * Voraussetzungen: ffmpeg mit libmp3lame und rubberband;
@@ -36,7 +37,7 @@ const REFS = path.join(__dirname, 'voice-refs');
 const OUT = path.join(ROOT, 'voice');
 const SAMPLES = path.join(ROOT, 'voice-samples');
 const REPORT = path.join(__dirname, 'voice-report.json');
-module.exports = { collectLines: () => collectLines(), speakable: (t, e) => speakable(t, e), render: (j, o) => render(j, o), castFor: (w, t) => castFor(w, t), PIPER_DIR };
+module.exports = { collectLines: () => collectLines(), speakable: (t, e) => speakable(t, e), spoken: (t, c) => spoken(t, c), render: (j, o) => render(j, o), castFor: (w, t) => castFor(w, t), PIPER_DIR };
 
 // ---------- Besetzung ----------
 // Chatterbox: ref = Referenzstimme in tools/voice-refs/, exaggeration = Ausdrucksstärke (0.25–2),
@@ -76,7 +77,7 @@ const CAST = {
 // Regie für einzelne Sätze (Originaltext → Abweichungen von der Figur):
 // exaggeration/cfg/semis/tempo wie oben, say = gesprochener Wortlaut (Untertitel bleibt), ⟦…⟧ = Geräusch
 const REGIE = {
-  'GURKENWASSER?! PARTYYYY!': { exaggeration: 1.4, cfg: 0.3, say: 'Oh! Gurkenwasser?! Party! ⟦laugh⟧' },
+  'GURKENWASSER?! PARTYYYY!': { exaggeration: 1.4, cfg: 0.3, say: 'Oh! Gurkenwasser?! Party! ⟦laugh⟧', lexikon: false },
 };
 // Sätze, die Lamar schon glücklich sagt
 const LAMA_HAPPY = ['Freund', 'HAHA', 'LACHST', 'elf Jahren', 'schönste Tag', 'ICH WEISS', 'LAHM', 'Dalai', 'Daumen', 'Testphase', 'Show'];
@@ -155,7 +156,8 @@ function castFor(who, text) {
   const base = who === 'lama' && LAMA_HAPPY.some(w => text.includes(w)) ? CAST.lamaHappy : (CAST[who] || CAST.hero);
   return REGIE[text] ? { ...base, ...REGIE[text] } : base;
 }
-const spoken = (text, c) => speakable(c.say || text, c.engine);
+// lexikon: false = Fremdwort-Umschreibungen der Engine auslassen (z. B. für bereits abgenommene Aufnahmen)
+const spoken = (text, c) => speakable(c.say || text, c.lexikon === false ? 'keine' : c.engine);
 
 // ---------- Audio erzeugen ----------
 function run(cmd, args, input, env) {
@@ -219,8 +221,10 @@ async function synthSound(job) {
 }
 
 // Teile (Sprache/Geräusch) mit kurzen Pausen zu einer Rohaufnahme zusammenfügen
+// Stille nur bis -60 dB kappen und 80 ms stehen lassen, damit leise Anfangs-/Endlaute erhalten bleiben
+const TRIM = 'silenceremove=start_periods=1:start_threshold=-60dB:start_silence=0.08,areverse,silenceremove=start_periods=1:start_threshold=-60dB:start_silence=0.08,areverse';
 async function assemble(job) {
-  const trim = 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse';
+  const trim = TRIM;
   const parts = job.files.map((f, i) => `[${i}]aresample=24000,aformat=channel_layouts=mono,${trim},apad=pad_dur=0.12[s${i}]`).join(';');
   const filter = `${parts};${job.files.map((f, i) => `[s${i}]`).join('')}concat=n=${job.files.length}:v=0:a=1`;
   await run('ffmpeg', ['-v', 'error', '-y', ...job.files.flatMap(f => ['-i', f]), '-filter_complex', filter, job.out]);
@@ -242,8 +246,8 @@ const stripTags = t => t.replace(/⟦[a-z]+⟧/g, ' ').replace(/\s+/g, ' ').trim
 async function finish(job) {
   const c = job.c;
   const rb = (semis, tempo) => `rubberband=pitch=${Math.pow(2, semis / 12).toFixed(5)}:tempo=${tempo}:formant=preserved`;
-  const trim = 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse';
-  const tail = `${trim},loudnorm=I=-16:TP=-1.5`;
+  // Kein zweites Kürzen hier: nach der Tonhöhenänderung sind leise Endlaute (s, ts, f) sonst weg
+  const tail = 'loudnorm=I=-16:TP=-1.5';
   const filter = job.raw[1]
     ? `[0]aresample=24000,${rb(c.semis, c.tempo)}[a];[1]aresample=24000,${rb(c.chorus, c.tempo)},adelay=15,volume=0.35[b];[a][b]amix=inputs=2:duration=longest,volume=2,${tail}`
     : `[0]aresample=24000,${rb(c.semis, c.tempo)},${tail}`;
@@ -263,7 +267,7 @@ async function render(jobs, { verify = false } = {}) {
       const files = [];
       segs.forEach((sg, n) => {
         const out = path.join(tmp, `${i}_${t}_${n}.wav`);
-        const seed = (parseInt(j.key.slice(0, 6), 16) + n * 13 + t * 7) % 100000;
+        const seed = (parseInt(j.key.slice(0, 6), 16) + (j.seedOffset || 0) + n * 13 + t * 7) % 100000;
         const key = t === 0 && n === 0 ? j.key : `${j.key}:${t}:${n}`;
         files.push(out);
         if (sg.tag === 'chew' || sg.tag === 'buzz') synth.push({ tag: sg.tag, out, seed });
@@ -382,15 +386,28 @@ async function trim(lines) {
   console.log(`${keys.length} Sätze werden auf Schnipsel am Ende geprüft`);
   const cuts = await check(lines, keys, { tail: true, quiet: true });
   if (process.argv.includes('--dry')) { for (const c of cuts) { const l = lines.get(c.key); console.log(`  (✂) ${c.key} ${l.who.padEnd(8)} „${l.text}“ ab ${c.cut}s: ${c.tail}`); } console.log(`${cuts.length} Schnitte (Trockenlauf)`); return cuts; }
+  const before = Object.fromEntries(cuts.map(c => [c.key, JSON.parse(fs.readFileSync(REPORT, 'utf8'))[c.key].ipa]));
   for (const c of cuts) {
     const f = path.join(OUT, c.key + '.mp3'), tmp = f + '.tmp.mp3';
+    fs.copyFileSync(f, f + '.bak');
     await run('ffmpeg', ['-v', 'error', '-y', '-i', f, '-af', `atrim=end=${c.cut},afade=t=out:st=${Math.max(0, c.cut - 0.04).toFixed(2)}:d=0.04`, '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '40k', tmp]);
     fs.renameSync(tmp, f);
     const l = lines.get(c.key);
     console.log(`  ✂ ${c.key} ${l.who.padEnd(8)} „${l.text}“  – abgeschnitten ab ${c.cut}s, Schnipsel: ${c.tail}`);
   }
-  console.log(`${cuts.length} Schnipsel abgeschnitten`);
-  if (cuts.length) await check(lines, cuts.map(c => c.key));
+  if (!cuts.length) return console.log('Keine Schnipsel gefunden');
+  // Gegenprobe: wird der Satz nach dem Schnitt schlechter erkannt, war es echte Sprache → zurück
+  await check(lines, cuts.map(c => c.key), { quiet: true });
+  const rep = JSON.parse(fs.readFileSync(REPORT, 'utf8'));
+  let undone = 0;
+  for (const c of cuts) {
+    const f = path.join(OUT, c.key + '.mp3');
+    if (rep[c.key].ipa > before[c.key] + 0.02) { fs.renameSync(f + '.bak', f); undone++; console.log(`  ↩ ${c.key} zurückgenommen (Abweichung ${before[c.key]} → ${rep[c.key].ipa})`); }
+    else fs.unlinkSync(f + '.bak');
+  }
+  console.log(`${cuts.length - undone} Schnipsel abgeschnitten, ${undone} zurückgenommen`);
+  if (undone) await check(lines, cuts.map(c => c.key), { quiet: true });
+  review(lines);
 }
 
 // ---------- Prüfseite ----------
@@ -426,6 +443,15 @@ if (require.main === module) (async () => {
   if (argv.includes('--review')) return review(lines);
   if (argv.includes('--check')) return check(lines);
   if (argv.includes('--trim')) return trim(lines);
+  if (argv.includes('--neu')) {
+    const q = argv[argv.indexOf('--neu') + 1] || '';
+    const keys = [...lines].filter(([k, l]) => q && (l.text.includes(q) || k === q)).map(([k]) => k);
+    if (!keys.length) return console.log(`Kein Satz enthält „${q}“`);
+    const offset = Date.now() % 100000;
+    for (const k of keys) console.log(`  neu: ${k} ${lines.get(k).who} „${lines.get(k).text}“`);
+    await render(keys.map(k => ({ key: k, text: lines.get(k).text, c: castFor(lines.get(k).who, lines.get(k).text), out: path.join(OUT, k + '.mp3'), seedOffset: offset })), { verify: true });
+    return check(lines, keys);
+  }
   if (argv.includes('--redo')) {
     const rep = fs.existsSync(REPORT) ? JSON.parse(fs.readFileSync(REPORT, 'utf8')) : {};
     const keys = [...lines.keys()].filter(k => rep[k] && rep[k].ipaFlag && castFor(lines.get(k).who, lines.get(k).text).engine === 'chatterbox');

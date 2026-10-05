@@ -63,7 +63,7 @@ FRAME = 0.02  # wav2vec2: 320 Samples bei 16 kHz
 
 
 def gap_burst(y, end_time):
-    """Nach dem Textende: erst Pause (≥ 0,12 s unter -40 dB), danach wieder hörbar (> -30 dB)?
+    """Nach dem Textende: erst Pause (≥ 0,18 s unter -40 dB), danach wieder hörbar (> -30 dB)?
     Dann ist das ein abgehackter Nachklang. Gibt die Schnittzeit in der Pause zurück."""
     if y is None:
         return None
@@ -72,7 +72,7 @@ def gap_burst(y, end_time):
     i, quiet = int(end_time / 0.01), 0
     while i < len(db):
         quiet = quiet + 1 if db[i] < -40 else 0
-        if quiet >= 12:
+        if quiet >= 18:  # kürzere Stille ist oft nur ein Verschlusslaut (t in „Salz“)
             start = i - quiet + 1
             if (db[i + 1:] > -30).any():
                 return round(start * 0.01 + 0.06, 2)
