@@ -366,8 +366,8 @@ function lookSelf() {
 
 function bindUI() {
   const stage = $('#stage');
+  // Klicks brechen die laufende Zeile nicht ab – überspringen nur per Leertaste/Enter
   stage.addEventListener('click', e => {
-    if (G.skip) { G.skip(); return; }
     if (G.busy || G.dialog || !S) return;
     S.clicks++;
     const vb = e.target.closest('#verbs button');
@@ -407,7 +407,6 @@ function bindUI() {
   });
 
   $('#inv').addEventListener('click', e => {
-    if (G.skip) { G.skip(); return; }
     if (G.busy || G.dialog) return;
     const b = e.target.closest('.slot[data-item]');
     if (!b) return;
@@ -435,7 +434,7 @@ function bindUI() {
     if (!e.target.closest('#itemMenu, #inv, #stage')) $('#itemMenu').hidden = true;
   });
 
-  $('#btnHint').onclick = () => { if (G.skip) return G.skip(); if (!G.busy && !G.dialog) script(() => say('Psst! ' + hint(), 'narr')); };
+  $('#btnHint').onclick = () => { if (!G.busy && !G.dialog) script(() => say('Psst! ' + hint(), 'narr')); };
   $('#btnSound').onclick = () => { setSound(!Snd.on); };
   $('#btnVoice').onclick = () => { ensureAudio(); setVoice(!Snd.voiceOn); };
   $('#btnMenu').onclick = openMenu;
